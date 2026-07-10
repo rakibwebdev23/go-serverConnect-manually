@@ -53,10 +53,10 @@ func handleGoodbye(w http.ResponseWriter, r *http.Request) {
 
 // GET products api
 func getProducts(w http.ResponseWriter, r *http.Request) {
-	handleCors(w)
+	handleCors(w);
+	handlePreflightOptionsReq(w, r);
 
-	if r.Method != "GET" {
-		http.Error(w, "Please send GET request", http.StatusBadRequest)
+	if r.Method != "GET"{
 		return
 	}
 
@@ -75,19 +75,13 @@ func getProducts(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	handleSend(w, response)
 }
 
 // GET api request with options & preflight request for products api
 func getProductsWithOptions(w http.ResponseWriter, r *http.Request) {
-	handleCors(w);
-	handlePerflightOptionsReq(w, r)
-
-	if r.Method != "GET" {
-		http.Error(w, "Please send GET request", http.StatusBadRequest)
-		return
-	}
+	handleCors(w)
+	handlePreflightOptionsReq(w, r);
 
 	response := APIResponse{
 		StatusCode: http.StatusOK,
@@ -104,19 +98,13 @@ func getProductsWithOptions(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	encoder := json.NewEncoder(w)
-	encoder.Encode(response);
+	handleSend(w, response)
 }
 
 // POST create api
 func createProduct(w http.ResponseWriter, r *http.Request) {
-	handleCors(w);
-	handlePerflightOptionsReq(w, r)
-
-	if r.Method != "POST" {
-		http.Error(w, "Please send POST request", http.StatusBadRequest)
-		return
-	}
+	handleCors(w)
+	handlePreflightOptionsReq(w, r)
 
 	var newProduct Product
 	decoder := json.NewDecoder(r.Body)
@@ -135,17 +123,27 @@ func createProduct(w http.ResponseWriter, r *http.Request) {
 		Message:    "Product created successfully",
 		Data:       newProduct,
 	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
+	handleSend(w, response)
 
 }
 
-func handleCors(w http.ResponseWriter){
+func handleCors(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Rakib")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods","GET, POST, PUT, PATCH, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Rakib")
+	w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
+}
+
+func handlePreflightOptionsReq(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+}
+
+func handleSend(w http.ResponseWriter, data interface{}) {
+	encoder := json.NewEncoder(w)
+	encoder.Encode(data)
 }
 
 func handlePerflightOptionsReq(w http.ResponseWriter, r *http.Request){
@@ -158,10 +156,11 @@ func handlePerflightOptionsReq(w http.ResponseWriter, r *http.Request){
 func main() {
 	mux := http.NewServeMux() //router create
 
-	mux.HandleFunc("/hello", handleHello) // route declaration
-	mux.HandleFunc("/good-bye", handleGoodbye)
-	mux.HandleFunc("/products", getProductsWithOptions)
-	mux.HandleFunc("/products/create", createProduct)
+	mux.Handle("GET /hello", http.HandlerFunc(handleHello)) // route declaration
+	mux.Handle("GET /good-bye", http.HandlerFunc(handleGoodbye))
+	mux.Handle("GET /products", http.HandlerFunc(getProducts))
+	mux.Handle("OPTIONS /products", http.HandlerFunc(getProductsWithOptions))
+	mux.Handle("POST /products/create", http.HandlerFunc(createProduct))
 
 	fmt.Println("Server port running:8080")
 
