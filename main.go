@@ -53,8 +53,7 @@ func handleGoodbye(w http.ResponseWriter, r *http.Request) {
 
 // GET products api
 func getProducts(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	handleCors(w)
 
 	if r.Method != "GET" {
 		http.Error(w, "Please send GET request", http.StatusBadRequest)
@@ -82,14 +81,8 @@ func getProducts(w http.ResponseWriter, r *http.Request) {
 
 // GET api request with options & preflight request for products api
 func getProductsWithOptions(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Rakib")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(200)
-		return
-	}
+	handleCors(w);
+	handlePerflightOptionsReq(w, r)
 
 	if r.Method != "GET" {
 		http.Error(w, "Please send GET request", http.StatusBadRequest)
@@ -111,21 +104,14 @@ func getProductsWithOptions(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	encoder := json.NewEncoder(w)
+	encoder.Encode(response);
 }
 
 // POST create api
 func createProduct(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
+	handleCors(w);
+	handlePerflightOptionsReq(w, r)
 
 	if r.Method != "POST" {
 		http.Error(w, "Please send POST request", http.StatusBadRequest)
@@ -153,6 +139,20 @@ func createProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 
+}
+
+func handleCors(w http.ResponseWriter){
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Rakib")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods","GET, POST, PUT, PATCH, DELETE, OPTIONS")
+}
+
+func handlePerflightOptionsReq(w http.ResponseWriter, r *http.Request){
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(200)
+		return
+	}
 }
 
 func main() {
