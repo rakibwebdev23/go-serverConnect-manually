@@ -1,24 +1,28 @@
-package main
+package handlers
 
-import "net/http"
+import ( 
+	"net/http"
+	"ecommerce/product"
+	"ecommerce/utils"
+)
 
 // GET products api
-func getProducts(w http.ResponseWriter, r *http.Request) {
+func GetProducts(w http.ResponseWriter, r *http.Request) {
 
-	response := APIResponse{
+	response := product.APIResponse{
 		StatusCode: http.StatusOK,
 		Success:    true,
 		Message:    "Success",
-		Data: ProductData{
-			Meta: Meta{
-				Total:      len(productList),
+		Data: product.ProductData{
+			Meta: product.Meta{
+				Total:      len(product.ProductList),
 				Page:       1,
 				Limit:      10,
 				TotalPages: 1,
 			},
-			Result: productList,
+			Result: product.ProductList,
 		},
 	}
 
-	handleSend(w, response)
+	utils.HandleSend(w, response)
 }
