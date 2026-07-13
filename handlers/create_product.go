@@ -1,17 +1,17 @@
 package handlers
 
 import (
+	"ecommerce/database"
+	"ecommerce/utils"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"ecommerce/product"
-	"ecommerce/utils"
 )
 
 // POST create api
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	// json struct a convert 
-	var newProduct product.Product
+	var newProduct database.Product
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&newProduct)
 	if err != nil {
@@ -20,10 +20,10 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newProduct.ID = len(product.ProductList) + 1
-	product.ProductList = append(product.ProductList, newProduct)
+	newProduct.ID = len(database.ProductList) + 1
+	database.ProductList = append(database.ProductList, newProduct)
 
-	response := product.APIResponseCreate{
+	response := database.APIResponseCreate{
 		StatusCode: http.StatusCreated,
 		Success:    true,
 		Message:    "Product created successfully",
