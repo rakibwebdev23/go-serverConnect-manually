@@ -24,5 +24,5 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	utils.HandleSend(w, response)
+	utils.HandleSend(w, http.StatusOK, response)
 }

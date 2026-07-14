@@ -16,7 +16,7 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&newProduct)
 	if err != nil {
 		fmt.Println("Error decoding request body:", err)
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		utils.HandleError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
@@ -30,6 +30,6 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 		Data:       newProduct,
 	}
 	
-	utils.HandleSend(w, response);
+	utils.HandleSend(w, http.StatusCreated, response);
 
 }
