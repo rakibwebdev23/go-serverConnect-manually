@@ -10,7 +10,7 @@ import (
 
 // POST create api
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
-	// json struct a convert 
+	// json struct a convert
 	var newProduct database.Product
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&newProduct)
@@ -19,17 +19,7 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
-
-	newProduct.ID = len(database.ProductList) + 1
-	database.ProductList = append(database.ProductList, newProduct)
-
-	response := database.APIResponseCreate{
-		StatusCode: http.StatusCreated,
-		Success:    true,
-		Message:    "Product created successfully",
-		Data:       newProduct,
-	}
-	
-	utils.HandleSend(w, http.StatusCreated, response);
+	createdProduct := database.Store(newProduct)
+	utils.CreateResponse(w, http.StatusCreated, "Product created successfully", createdProduct)
 
 }

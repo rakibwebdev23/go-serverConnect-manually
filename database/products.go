@@ -1,5 +1,7 @@
 package database
 
+
+
 type Product struct {
 	ID          int     `json:"id"`
 	Title       string  `json:"title"`
@@ -8,35 +10,49 @@ type Product struct {
 	ImgUrl      string  `json:"img_url"`
 }
 
-type Meta struct {
-	Total      int `json:"total"`
-	Page       int `json:"page"`
-	Limit      int `json:"limit"`
-	TotalPages int `json:"totalPages"`
+var productList []Product
+
+// POST create product store to database
+func Store(p Product) Product {
+	p.ID = len(productList) + 1
+	productList = append(productList, p)
+	return p
 }
 
-type ProductData struct {
-	Meta   Meta      `json:"meta"`
-	Result []Product `json:"result"`
+// GET All Procuts database Listing
+func GetList() []Product {
+	return productList
 }
 
-type APIResponse struct {
-	StatusCode int         `json:"statusCode"`
-	Success    bool        `json:"success"`
-	Message    string      `json:"message"`
-	Data       ProductData `json:"data"`
+// GET Single Product by id from database
+func SingleGet(productID int) *Product {
+	for _, product := range productList {
+		if product.ID == productID {
+			return &product
+		}
+	}
+	return nil
 }
 
-// Response for Create Product
-type APIResponseCreate struct {
-	StatusCode int     `json:"statusCode"`
-	Success    bool    `json:"success"`
-	Message    string  `json:"message"`
-	Data       Product `json:"data"`
+// Update product from database
+func Update(product Product) {
+	for index, p := range productList {
+		if p.ID == product.ID {
+			productList[index] = product
+		}
+	}
 }
 
-var ProductList []Product
-
+// Delete product from database
+func Delete(productID int) {
+	var tempList []Product
+	for _, p := range productList {
+		if p.ID != productID {
+			tempList = append(tempList, p)
+		}
+	}
+	productList = tempList
+}
 
 func init() {
 	product1 := Product{
@@ -110,5 +126,5 @@ func init() {
 		ImgUrl:      "https://example.com/kiwi.jpg",
 	}
 
-	ProductList = append(ProductList, product1, product2, product3, product4, product5, product6, product7, product8, product9, product10)
+	productList = append(productList, product1, product2, product3, product4, product5, product6, product7, product8, product9, product10)
 }
