@@ -1,4 +1,4 @@
-package handlers
+package products
 
 import (
 	"ecommerce/database"
@@ -9,7 +9,7 @@ import (
 )
 
 // POST create api
-func CreateProduct(w http.ResponseWriter, r *http.Request) {
+func (h * Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	// json struct a convert
 	var newProduct database.Product
 	decoder := json.NewDecoder(r.Body)

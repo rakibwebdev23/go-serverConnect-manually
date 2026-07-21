@@ -11,12 +11,18 @@ type Config struct {
 	Version string
 	ServiceName string
 	HttpPort int
+	JwtSecretKey string
 }
 
-var configurations Config
+var configurations *Config
 
 func loadConfig() {
 	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file")
+		os.Exit(1)
+	}
+
 	version := os.Getenv("VERSION")
 	if version == "" {
 		fmt.Println("Version is required")
@@ -26,6 +32,12 @@ func loadConfig() {
 	serviceName := os.Getenv("SERVICE_NAME")
 	if serviceName == "" {
 		fmt.Println("Service name is required")
+		os.Exit(1)
+	}
+
+	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+	if jwtSecretKey == "" {
+		fmt.Println("JWT secret key is required")
 		os.Exit(1)
 	}
 
@@ -41,15 +53,18 @@ func loadConfig() {
 		os.Exit(1)
 	}
 
-	configurations = Config {
+	configurations = &Config {
 		Version: version,
 		ServiceName: serviceName,
 		HttpPort: int(port), // type casting
+		JwtSecretKey: jwtSecretKey,
 	}
 
 }
 
-func GetConfig () Config {
-	loadConfig()
+func GetConfig () *Config {
+	if configurations == nil{
+		loadConfig()
+	}
 	return configurations
 }

@@ -1,4 +1,4 @@
-package handlers
+package products
 
 import (
 	"ecommerce/database"
@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func UpdateProduct(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	// Get id from request url params
 	productID := r.PathValue("id")
 

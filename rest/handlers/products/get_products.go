@@ -1,4 +1,4 @@
-package handlers
+package products
 
 import (
 	"net/http"
@@ -7,6 +7,6 @@ import (
 )
 
 // GET products api
-func GetProducts(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	utils.GetProductsResponse(w, http.StatusOK, "Success", len(database.GetList()), 1, 10, database.GetList())
 }
