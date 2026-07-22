@@ -28,6 +28,7 @@ func NewProductRepo() ProductRepo{
 	return repo
 }
 
+
 func (r *productRepo) Create(p Product) (*Product, error){
 	p.ID=len(r.productList) + 1
 	r.productList = append(r.productList, &p)
@@ -66,4 +67,49 @@ func (r *productRepo) Update(product Product) (*Product, error){
 		}
 	}
 	return &product, nil
+}
+
+func generateInitialProducts (r *productRepo){
+	prd1 := &Product{
+		ID:          1,
+		Title:       "Banana",
+		Description: "A delicious yellow fruit",
+		Price:       1.99,
+		ImgUrl:      "https://example.com/banana.jpg",
+	}
+	prd2 := &Product{
+		ID:          2,
+		Title:       "Apple",
+		Description: "A sweet red fruit",
+		Price:       0.99,
+		ImgUrl:      "https://example.com/apple.jpg",
+	}
+	prd3 := &Product{
+		ID:          3,
+		Title:       "Orange",
+		Description: "A juicy citrus fruit",
+		Price:       1.49,
+		ImgUrl:      "https://example.com/orange.jpg",
+	}
+	prd4 := &Product{
+		ID:          4,
+		Title:       "Grapes",
+		Description: "A bunch of small round fruits",
+		Price:       2.99,
+		ImgUrl:      "https://example.com/grapes.jpg",
+	}
+	prd5 := &Product{
+		ID:          5,
+		Title:       "Strawberry",
+		Description: "A red heart-shaped fruit",
+		Price:       3.49,
+		ImgUrl:      "https://example.com/strawberry.jpg",
+	}
+
+	r.productList = append(r.productList, prd1)
+	r.productList = append(r.productList, prd2)
+	r.productList = append(r.productList, prd3)
+	r.productList = append(r.productList, prd4)
+	r.productList = append(r.productList, prd5)
+
 }
