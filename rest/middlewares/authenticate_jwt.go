@@ -12,19 +12,26 @@ func (m *Middlewares) AuthenticateJWT (next http.Handler) http.Handler{
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 
-		if header == ""{
+		if header == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return 
+			return
 		}
 
-		headerArr := strings.Split(header, " ")
+		// headerArr := strings.Split(header, " ")
+		// if len(headerArr) !=2 {
+		// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// 	return 
+		// }
+		// accessToken := headerArr[1]
 
-		if len(headerArr) !=2 {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return 
+		var accessToken string
+		if strings.HasPrefix(header, "Bearer ") {
+			accessToken = strings.TrimPrefix(header, "Bearer ")
+		} else {
+			accessToken = header
 		}
+		accessToken = strings.TrimSpace(accessToken)
 
-		accessToken := headerArr[1]
 		tokenParts := strings.Split(accessToken, ".")
 
 		if len(tokenParts) !=3 {

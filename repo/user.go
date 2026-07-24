@@ -1,40 +1,46 @@
 package repo
 
 type User struct {
-	ID int `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName string `json:"last_name"`
-	Email string `json:"email"`
-	Password string `json:"password"`
-	IsShopOwner bool `json:"is_shop_owner"`
+	ID          int    `json:"id"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	IsShopOwner bool   `json:"is_shop_owner"`
 }
 
-type UserRepo interface{
-	Create(p Product) (*Product, error)
-	Get(productID int) (*Product, error)
-	List() ([]*Product, error)
-	Delete(productID int) error
-	Update(p Product) (*Product, error)
+// repository pattern
+type UserRepo interface {
+	Create(u User) (*User, error)
+	Find(email, pass string) (*User, error)
 }
 
-var users []User
+// property
+type userRepo struct {
+	users []User
+}
+
+// constractor or Constractor function
+func NewUserRepo() UserRepo {
+	return &userRepo{}
+}
 
 // POST create product store to database
-func UserStore(u User) User {
-	if u.ID != 0 {
-		return  u
+func (r *userRepo) Create(user User) (*User, error) {
+	if user.ID != 0 {
+		return &user, nil
 	}
-	u.ID = len(users) + 1
-	users = append(users, u)
-	return u
+	user.ID = len(r.users) + 1
+	r.users = append(r.users, user)
+	return &user, nil
 }
 
-//Post user api 
-func FindUser (email, pass string) *User {
-	for _, u := range users {
-		if u.Email == email && u.Password == pass {
-			return &u
+// Post user api
+func (r *userRepo) Find(email, pass string) (*User, error) {
+	for _, user := range r.users {
+		if user.Email == email && user.Password == pass {
+			return &user, nil
 		}
 	}
-	return  nil
+	return nil, nil
 }

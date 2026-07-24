@@ -1,7 +1,15 @@
 package review
 
-type Handler struct {}
+import (
+	"ecommerce/repo"
+)
 
-func NewHandler () *Handler {
-	return &Handler{}
+type Handler struct {
+	reviewRepo repo.ReviewRepo
+}
+
+func NewHandler(reviewRepo repo.ReviewRepo) *Handler {
+	return &Handler{
+		reviewRepo: reviewRepo,
+	}
 }

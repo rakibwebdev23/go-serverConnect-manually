@@ -1,12 +1,17 @@
 package review
 
 import (
-	"ecommerce/database"
 	"ecommerce/utils"
 	"net/http"
 )
 
-// GET products api
+// GET reviews api
 func (h *Handler) GetReview(w http.ResponseWriter, r *http.Request) {
-	utils.GetProductsResponse(w, http.StatusOK, "Success", len(database.GetList()), 1, 10, database.GetReviewList())
+	reviews, err := h.reviewRepo.List()
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to fetch reviews")
+		return
+	}
+	utils.GetProductsResponse(w, http.StatusOK, "Success", len(reviews), 1, 10, reviews)
 }
+

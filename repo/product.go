@@ -16,6 +16,7 @@ type ProductRepo interface{
 	Update(p Product) (*Product, error)
 }
 
+// property
 type productRepo struct{
 	productList []*Product
 }
@@ -35,6 +36,10 @@ func (r *productRepo) Create(p Product) (*Product, error){
 	return &p, nil
 }
 
+func (r *productRepo) List()([]*Product, error){
+	return r.productList, nil
+}
+
 func (r *productRepo) Get(productID int)(*Product, error){
 	for _, product := range r.productList{
 		if(product.ID) == productID{
@@ -44,9 +49,6 @@ func (r *productRepo) Get(productID int)(*Product, error){
 	return nil, nil
 }
 
-func (r *productRepo) List()([]*Product, error){
-	return r.productList, nil
-}
 
 func (r *productRepo) Delete(productID int) error{
 	var tempList []*Product

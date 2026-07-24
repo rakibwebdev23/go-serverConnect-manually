@@ -1,15 +1,14 @@
 package user
 
 import (
-	"ecommerce/database"
 	"ecommerce/utils"
 	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
-type ReqLogin struct{
-	Email string `json:"email"`
+type ReqLogin struct {
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -25,12 +24,27 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loginUser := database.FindUser(reqLogin.Email, reqLogin.Password)
-	if loginUser == nil {
+	loginUser, err := h.userRepo.Find(reqLogin.Email, reqLogin.Password)
+	if err != nil || loginUser == nil {
 		http.Error(w, "Invalid credentials", http.StatusBadRequest)
 		return
 	}
-	
-	utils.CreateResponse(w, http.StatusCreated, "Login successfull", loginUser)
 
+	accessToken, err := utils.CreateJwt(h.cnf.JwtSecretKey, UserPayload{
+		User:      loginUser.ID,
+		FirstName: loginUser.FirstName,
+		LastName:  loginUser.LastName,
+		Email:     loginUser.Email,
+	})
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to create token")
+		return
+	}
+
+	response := map[string]interface{}{
+		"accessToken": accessToken,
+		"user":        loginUser,
+	}
+
+	utils.CreateResponse(w, http.StatusCreated, "Login successfully", response)
 }

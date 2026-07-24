@@ -1,7 +1,7 @@
 package user
 
 import (
-	"ecommerce/database"
+	"ecommerce/repo"
 	"ecommerce/utils"
 	"encoding/json"
 	"fmt"
@@ -11,7 +11,7 @@ import (
 // POST create api
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// json struct a convert
-	var newUser database.User
+	var newUser repo.User
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&newUser)
 	if err != nil {
@@ -20,7 +20,28 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdUser := database.UserStore(newUser)
+	createdUser, err := h.userRepo.Create(newUser)
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to register user")
+		return
+	}
 
-	utils.CreateResponse(w, http.StatusCreated, "User Registered successfully", createdUser)
+	accessToken, err := utils.CreateJwt(h.cnf.JwtSecretKey, UserPayload{
+		User:      createdUser.ID,
+		FirstName: createdUser.FirstName,
+		LastName:  createdUser.LastName,
+		Email:     createdUser.Email,
+	})
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to create token")
+		return
+	}
+
+	response := map[string]interface{}{
+		"accessToken": accessToken,
+		"user":        createdUser,
+	}
+
+	utils.CreateResponse(w, http.StatusCreated, "User Registered successfully", response)
 }
+
