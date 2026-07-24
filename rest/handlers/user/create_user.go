@@ -8,19 +8,33 @@ import (
 	"net/http"
 )
 
+type ReqRegister struct {
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	IsShopOwner bool   `json:"is_shop_owner"`
+}
+
 // POST create api
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// json struct a convert
-	var newUser repo.User
+	var reqRegister ReqRegister
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&newUser)
+	err := decoder.Decode(&reqRegister)
 	if err != nil {
 		fmt.Println("Error decoding request body:", err)
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
 
-	createdUser, err := h.userRepo.Create(newUser)
+	createdUser, err := h.userRepo.Create(repo.User{
+		FirstName:   reqRegister.FirstName,
+		LastName:    reqRegister.LastName,
+		Email:       reqRegister.Email,
+		Password:    reqRegister.Password,
+		IsShopOwner: reqRegister.IsShopOwner,
+	})
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to register user")
 		return

@@ -8,6 +8,13 @@ import (
 	"strconv"
 )
 
+type ReqUpdateProduct struct {
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	ImgUrl      string  `json:"img_url"`
+}
+
 func (h *Handler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	// Get id from request url params
 	productID := r.PathValue("id")
@@ -18,16 +25,21 @@ func (h *Handler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var newProduct repo.Product
+	var reqUpdate ReqUpdateProduct
 	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&newProduct)
+	err = decoder.Decode(&reqUpdate)
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	newProduct.ID = id
-	updatedProduct, err := h.productRepo.Update(newProduct)
+	updatedProduct, err := h.productRepo.Update(repo.Product{
+		ID:          id,
+		Title:       reqUpdate.Title,
+		Description: reqUpdate.Description,
+		Price:       reqUpdate.Price,
+		ImgUrl:      reqUpdate.ImgUrl,
+	})
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to update product")
 		return
