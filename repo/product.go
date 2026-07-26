@@ -1,14 +1,20 @@
 package repo
 
+import (
+	"database/sql"
+
+	"github.com/jmoiron/sqlx"
+)
+
 type Product struct {
-	ID          int     `json:"id"`
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
-	ImgUrl      string  `json:"img_url"`
+	ID          int     `json:"id" db:"id"`
+	Title       string  `json:"title" db:"title"`
+	Description string  `json:"description" db:"description"`
+	Price       float64 `json:"price" db:"price"`
+	ImgUrl      string  `json:"img_url" db:"img_url"`
 }
 
-type ProductRepo interface{
+type ProductRepo interface {
 	Create(p Product) (*Product, error)
 	Get(productID int) (*Product, error)
 	List() ([]*Product, error)
@@ -17,101 +23,107 @@ type ProductRepo interface{
 }
 
 // property
-type productRepo struct{
-	productList []*Product
+type productRepo struct {
+	db *sqlx.DB
 }
 
-//constractor or Constractor function 
-func NewProductRepo() ProductRepo{
-	repo := &productRepo{}
-
-	generateInitialProducts(repo)
-	return repo
+// constractor or Constractor function
+func NewProductRepo(db *sqlx.DB) ProductRepo {
+	return &productRepo{
+		db: db,
+	}
 }
 
+func (r *productRepo) Create(p Product) (*Product, error) {
+	query := `
+			INSERT INTO products (
+				title,
+				description,
+				price,
+				img_url
+			)
+			VALUES ($1, $2, $3, $4)
+			RETURNING id;
+		`
 
-func (r *productRepo) Create(p Product) (*Product, error){
-	p.ID=len(r.productList) + 1
-	r.productList = append(r.productList, &p)
+	row := r.db.QueryRow(query, p.Title, p.Description, p.Price, p.ImgUrl)
+	err := row.Scan(&p.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &p, nil
 }
 
-func (r *productRepo) List()([]*Product, error){
-	return r.productList, nil
-}
+func (r *productRepo) List() ([]*Product, error) {
+	var productList []*Product
 
-func (r *productRepo) Get(productID int)(*Product, error){
-	for _, product := range r.productList{
-		if(product.ID) == productID{
-			return  product, nil
-		}
+	query := `
+		SELECT
+			id, 
+			title,
+			description,
+			price,
+			img_url
+		from products
+	`
+
+	err := r.db.Select(&productList, query)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+	return productList, nil
 }
 
+func (r *productRepo) Get(id int) (*Product, error) {
+	var product Product
 
-func (r *productRepo) Delete(productID int) error{
-	var tempList []*Product
+	query := `
+		SELECT
+			id, 
+			title,
+			description,
+			price,
+			img_url
+		from products
+		WHERE id = $1
+	`
 
-	for _, p := range r.productList{
-		if p.ID != productID{
-			tempList = append(tempList, p)
+	err := r.db.Get(&product, query, id)
+	if err != nil {
+		if err == sql.ErrNoRows{
+			return nil, nil
 		}
-	}
-	r.productList = tempList
-	return nil
-}
-
-func (r *productRepo) Update(product Product) (*Product, error){
-	for index, p := range r.productList{
-		if p.ID == product.ID{
-			r.productList[index] = &product
-		}
+		return nil, err
 	}
 	return &product, nil
 }
 
-func generateInitialProducts (r *productRepo){
-	prd1 := &Product{
-		ID:          1,
-		Title:       "Banana",
-		Description: "A delicious yellow fruit",
-		Price:       1.99,
-		ImgUrl:      "https://example.com/banana.jpg",
-	}
-	prd2 := &Product{
-		ID:          2,
-		Title:       "Apple",
-		Description: "A sweet red fruit",
-		Price:       0.99,
-		ImgUrl:      "https://example.com/apple.jpg",
-	}
-	prd3 := &Product{
-		ID:          3,
-		Title:       "Orange",
-		Description: "A juicy citrus fruit",
-		Price:       1.49,
-		ImgUrl:      "https://example.com/orange.jpg",
-	}
-	prd4 := &Product{
-		ID:          4,
-		Title:       "Grapes",
-		Description: "A bunch of small round fruits",
-		Price:       2.99,
-		ImgUrl:      "https://example.com/grapes.jpg",
-	}
-	prd5 := &Product{
-		ID:          5,
-		Title:       "Strawberry",
-		Description: "A red heart-shaped fruit",
-		Price:       3.49,
-		ImgUrl:      "https://example.com/strawberry.jpg",
+func (r *productRepo) Update(product Product) (*Product, error) {
+	query := `
+		UPDATE products 
+		SET title=$1, description=$2, price=$3, img_url=$4
+		WHERE id = $5
+	`
+
+	row := r.db.QueryRow(query, product.Title, product.Description, product.Price, product.ImgUrl)
+	err := row.Err()
+
+	if err != nil {
+		return nil, err
 	}
 
-	r.productList = append(r.productList, prd1)
-	r.productList = append(r.productList, prd2)
-	r.productList = append(r.productList, prd3)
-	r.productList = append(r.productList, prd4)
-	r.productList = append(r.productList, prd5)
+	return &product, nil
+}
 
+func (r *productRepo) Delete(id int) error {
+	query := `
+		DELETE FROM products WHERE id = $1
+	`
+	_, err := r.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
