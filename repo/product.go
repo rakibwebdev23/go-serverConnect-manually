@@ -14,6 +14,8 @@ type Product struct {
 	ImgUrl      string  `json:"img_url" db:"img_url"`
 }
 
+var ErrNotFound = sql.ErrNoRows
+
 type ProductRepo interface {
 	Create(p Product) (*Product, error)
 	Get(productID int) (*Product, error)
@@ -93,7 +95,7 @@ func (r *productRepo) Get(id int) (*Product, error) {
 	err := r.db.Get(&product, query, id)
 	if err != nil {
 		if err == sql.ErrNoRows{
-			return nil, nil
+			return nil, ErrNotFound
 		}
 		return nil, err
 	}
@@ -107,11 +109,17 @@ func (r *productRepo) Update(product Product) (*Product, error) {
 		WHERE id = $5
 	`
 
-	row := r.db.QueryRow(query, product.Title, product.Description, product.Price, product.ImgUrl)
-	err := row.Err()
-
+	res, err := r.db.Exec(query, product.Title, product.Description, product.Price, product.ImgUrl, product.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if rowsAffected == 0 {
+		return nil, ErrNotFound
 	}
 
 	return &product, nil
@@ -121,9 +129,18 @@ func (r *productRepo) Delete(id int) error {
 	query := `
 		DELETE FROM products WHERE id = $1
 	`
-	_, err := r.db.Exec(query, id)
+	res, err := r.db.Exec(query, id)
 	if err != nil {
 		return err
 	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
 	return nil
 }

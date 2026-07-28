@@ -44,7 +44,13 @@ func (r *userRepo) Create(user User) (*User, error) {
 			password,
 			is_shop_owner
 		)
-		VALUES ($1, $2, $3, $4, $5)
+		VALUES (
+		:first_name,
+		:last_name,
+		:email,
+		:password,
+		:is_shop_owner
+		)
 		RETURNING id
 	`
 

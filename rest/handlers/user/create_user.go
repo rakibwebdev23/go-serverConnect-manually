@@ -9,10 +9,11 @@ import (
 )
 
 type ReqRegister struct {
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Email       string `json:"email"`
-	Password    string `json:"password"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	// Password    string `json:"password"`
+	Password    string `json:"_"`
 	IsShopOwner bool   `json:"is_shop_owner"`
 }
 
@@ -40,22 +41,9 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, err := utils.CreateJwt(h.cnf.JwtSecretKey, UserPayload{
-		User:      createdUser.ID,
-		FirstName: createdUser.FirstName,
-		LastName:  createdUser.LastName,
-		Email:     createdUser.Email,
-	})
-	if err != nil {
-		utils.HandleError(w, http.StatusInternalServerError, "Failed to create token")
-		return
-	}
-
 	response := map[string]interface{}{
-		"accessToken": accessToken,
-		"user":        createdUser,
+		"user": createdUser,
 	}
 
 	utils.CreateResponse(w, http.StatusCreated, "User Registered successfully", response)
 }
-

@@ -41,6 +41,10 @@ func (h *Handler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		ImgUrl:      reqUpdate.ImgUrl,
 	})
 	if err != nil {
+		if err == repo.ErrNotFound {
+			utils.HandleError(w, http.StatusNotFound, "Product not found")
+			return
+		}
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to update product")
 		return
 	}

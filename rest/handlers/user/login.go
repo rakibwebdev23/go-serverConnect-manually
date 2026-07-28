@@ -9,7 +9,8 @@ import (
 
 type ReqLogin struct {
 	Email    string `json:"email"`
-	Password string `json:"password"`
+	// Password string `json:"password"`
+	Password    string `json:"_"`
 }
 
 // POST create api
@@ -25,8 +26,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	loginUser, err := h.userRepo.Find(reqLogin.Email, reqLogin.Password)
-	if err != nil || loginUser == nil {
-		http.Error(w, "Invalid credentials", http.StatusBadRequest)
+	if err != nil {
+		fmt.Println("Database error during login:", err)
+		utils.HandleError(w, http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+	if loginUser == nil {
+		utils.HandleError(w, http.StatusBadRequest, "Invalid credentials")
 		return
 	}
 
@@ -43,7 +49,6 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	response := map[string]interface{}{
 		"accessToken": accessToken,
-		"user":        loginUser,
 	}
 
 	utils.CreateResponse(w, http.StatusCreated, "Login successfully", response)
